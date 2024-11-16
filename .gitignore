@@ -64,3 +64,10 @@ lightning_logs/
 eval/media*
 eval
 venv
+
+# videos and images
+.mp4
+.png
+
+# annotations
+.csv
