@@ -11,10 +11,11 @@ def subsample_frames(video_dir: str = '../../seg_videos', image_dir: str = '../.
 
     print(f"Start subsampling videos with 5 fps and create corresponding ground truth labels")
 
-    outer = tqdm(total=1, desc='Files', position=0, leave=True)
+    outer = tqdm(total=len(case_list), desc='Files', position=0, leave=True)
 
-    for i in range(1, 2):
+    for i in range(len(case_list)):
         if case_list[i] == '.DS_Store':
+            outer.update(1)
             continue
         video_path = Path(os.path.join(video_dir, case_list[i]))
         video_list = sorted(video_path.glob('*.mp4'), key=lambda v: int(v.stem.split('_')[3].split('-')[0]))
