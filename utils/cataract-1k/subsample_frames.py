@@ -29,8 +29,10 @@ def subsample_frames(video_dir: str = '../../seg_videos', image_dir: str = '../.
             img_path = [ i.relative_to(image_dir) for i in img_out_path.glob(f'{video.stem}_*.png') ]
             img_path = sorted(img_path, key=lambda v: int(v.stem.split('_')[-1]))
             labels = [video.stem.split('_')[2]] * len(img_path)
-            new_rows = pd.DataFrame({'image_path': img_path, 'label': labels})
-            df = pd.concat([df, new_rows], ignore_index=True, sort=True)
+            new_rows = pd.DataFrame()
+            new_rows['image_path'] = img_path
+            new_rows['label'] = labels
+            df = pd.concat([df, new_rows], ignore_index=True, sort=False)
         df.to_csv(os.path.join(annotations_dir, f"{case_list[i]}/timestamp.csv"), index=False)
         outer.update(1)
     print(f"Done\n")
