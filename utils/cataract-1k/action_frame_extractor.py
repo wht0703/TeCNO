@@ -26,9 +26,9 @@ def extract_action_frames(video_path: str = '../../videos', annotation_path: str
     case_list.sort()
 
     print(f'Start extracting action frames')
-    outer  = tqdm(total=3, desc='Extracting action frames from: ', position=0, leave=True)
+    outer  = tqdm(total=len(case_list), desc='Extracting action frames from: ', position=0, leave=True)
 
-    for i in range(0, 3):
+    for i in range(len(case_list)):
         case_folder = os.path.join(annotation_path, case_list[i])
         video_info_csv = os.path.join(case_folder, f"{case_list[i]}_video.csv")
         video_annotation_csv = os.path.join(case_folder, f"{case_list[i]}_annotations_phases.csv")
