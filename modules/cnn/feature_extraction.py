@@ -1,9 +1,8 @@
-import logging
 import torch
 from torch import optim
 from torch.utils.data import DataLoader
-import pytorch_lightning as pl
-from pytorch_lightning.core.lightning import LightningModule
+import torchmetrics
+from pytorch_lightning import LightningModule
 from torch import nn
 from pycm import ConfusionMatrix
 import numpy as np
@@ -13,10 +12,10 @@ import pickle
 class FeatureExtraction(LightningModule):
     def __init__(self, hparams, model, dataset):
         super(FeatureExtraction, self).__init__()
-        self.hparams = hparams
+        self.params = hparams
         self.batch_size = hparams.batch_size
         self.dataset = dataset
-        self.num_tasks = self.hparams.num_tasks  # output stem 0, output phase 1 , output phase and tool 2
+        self.num_tasks = hparams.num_tasks  # output stem 0, output phase 1 , output phase and tool 2
         self.log_vars = nn.Parameter(torch.zeros(2))
         self.bce_loss = nn.BCEWithLogitsLoss()
         self.ce_loss = nn.CrossEntropyLoss(weight=torch.from_numpy(self.dataset.class_weights).float())
@@ -35,17 +34,17 @@ class FeatureExtraction(LightningModule):
         self.pickle_path = None
 
     def init_metrics(self):
-        self.train_acc_phase = pl.metrics.Accuracy()
-        self.val_acc_phase = pl.metrics.Accuracy()
-        self.test_acc_phase = pl.metrics.Accuracy()
-        if self.num_tasks == 2:
-            self.train_acc_tool = pl.metrics.Accuracy()
-            self.val_acc_tool = pl.metrics.Accuracy()
-            self.val_f1_tool = pl.metrics.Fbeta(num_classes=7, multilabel=True)
-            self.train_f1_tool = pl.metrics.Fbeta(num_classes=7, multilabel=True)
+        self.train_acc_phase = torchmetrics.Accuracy('multiclass', num_classes=13)
+        self.val_acc_phase = torchmetrics.Accuracy('multiclass', num_classes=13)
+        self.test_acc_phase = torchmetrics.Accuracy('multiclass', num_classes=13)
+        # if self.num_tasks == 2:
+        #     self.train_acc_tool = pl.metrics.Accuracy()
+        #     self.val_acc_tool = pl.metrics.Accuracy()
+        #     self.val_f1_tool = pl.metrics.Fbeta(num_classes=7, multilabel=True)
+        #     self.train_f1_tool = pl.metrics.Fbeta(num_classes=7, multilabel=True)
 
     def set_export_pickle_path(self):
-        self.pickle_path = self.hparams.output_path / "cholec80_pickle_export"
+        self.pickle_path = self.params.output_path / "cholec80_pickle_export"
         self.pickle_path.mkdir(exist_ok=True)
         print(f"setting export_pickle_path: {self.pickle_path}")
 
@@ -54,36 +53,36 @@ class FeatureExtraction(LightningModule):
     # ---------------------
 
     def forward(self,x):
-        stem, phase, tool = self.model.forward(x)
-        return stem, phase, tool
+        stem, phase = self.model.forward(x)
+        return stem, phase
 
     def loss_phase_tool(self, p_phase, p_tool, labels_phase, labels_tool, num_tasks):
         loss_phase = self.ce_loss(p_phase, labels_phase)
         if num_tasks == 1:
             return loss_phase
-        # else
-        labels_tool = torch.stack(labels_tool, dim=1)
-        loss_tools = self.bce_loss(p_tool, labels_tool.data.float())
-        # automatic balancing
-        precision1 = torch.exp(-self.log_vars[0])
-        loss_phase_l = precision1 * loss_phase + self.log_vars[0]
-        precision2 = torch.exp(-self.log_vars[1])
-        loss_tool_l = precision2 * loss_tools + self.log_vars[1]
-        loss = loss_phase_l + loss_tool_l
-        return loss
+        # # else
+        # labels_tool = torch.stack(labels_tool, dim=1)
+        # loss_tools = self.bce_loss(p_tool, labels_tool.data.float())
+        # # automatic balancing
+        # precision1 = torch.exp(-self.log_vars[0])
+        # loss_phase_l = precision1 * loss_phase + self.log_vars[0]
+        # precision2 = torch.exp(-self.log_vars[1])
+        # loss_tool_l = precision2 * loss_tools + self.log_vars[1]
+        # loss = loss_phase_l + loss_tool_l
+        # return loss
 
 
 
     def training_step(self, batch, batch_idx):
-        x, y_phase, y_tool = batch
-        _, p_phase, p_tool = self.forward(x)
-        loss = self.loss_phase_tool(p_phase, p_tool, y_phase, y_tool, self.num_tasks)
+        x, y_phase, _ = batch
+        _, p_phase = self.forward(x)
+        loss = self.loss_phase_tool(p_phase, None, y_phase, None, self.num_tasks)
         # acc_phase, acc_tool, loss
-        if self.num_tasks == 2:
-            self.train_acc_tool(p_tool, torch.stack(y_tool, dim=1))
-            self.log("train_acc_tool", self.train_acc_tool, on_epoch=True, on_step=False)
-            self.train_f1_tool(p_tool, torch.stack(y_tool, dim=1))
-            self.log("train_f1_tool", self.train_f1_tool, on_epoch=True, on_step=False)
+        # if self.num_tasks == 2:
+        #     self.train_acc_tool(p_tool, torch.stack(y_tool, dim=1))
+        #     self.log("train_acc_tool", self.train_acc_tool, on_epoch=True, on_step=False)
+        #     self.train_f1_tool(p_tool, torch.stack(y_tool, dim=1))
+        #     self.log("train_f1_tool", self.train_f1_tool, on_epoch=True, on_step=False)
         self.train_acc_phase(p_phase, y_phase)
         self.log("train_acc_phase", self.train_acc_phase, on_epoch=True, on_step=True)
         self.log("loss", loss, prog_bar=True, logger=True, on_epoch=True, on_step=True)
@@ -92,15 +91,15 @@ class FeatureExtraction(LightningModule):
 
 
     def validation_step(self, batch, batch_idx):
-        x, y_phase, y_tool = batch
-        _, p_phase, p_tool = self.forward(x)
-        loss = self.loss_phase_tool(p_phase, p_tool, y_phase, y_tool, self.num_tasks)
+        x, y_phase, _ = batch
+        _, p_phase = self.forward(x)
+        loss = self.loss_phase_tool(p_phase, None, y_phase, None, self.num_tasks)
         # acc_phase, acc_tool, loss
-        if self.num_tasks == 2:
-            self.val_acc_tool(p_tool, torch.stack(y_tool, dim=1))
-            self.log("val_acc_tool", self.val_acc_tool, on_epoch=True, on_step=False)
-            self.val_f1_tool(p_tool, torch.stack(y_tool, dim=1))
-            self.log("val_f1_tool", self.val_f1_tool, on_epoch=True, on_step=False)
+        # if self.num_tasks == 2:
+        #     self.val_acc_tool(p_tool, torch.stack(y_tool, dim=1))
+        #     self.log("val_acc_tool", self.val_acc_tool, on_epoch=True, on_step=False)
+        #     self.val_f1_tool(p_tool, torch.stack(y_tool, dim=1))
+        #     self.log("val_f1_tool", self.val_f1_tool, on_epoch=True, on_step=False)
         self.val_acc_phase(p_phase, y_phase)
         self.log("val_acc_phase", self.val_acc_phase, on_epoch=True, on_step=False)
         self.log("val_loss", loss, prog_bar=True, logger=True, on_epoch=True, on_step=False)
@@ -118,10 +117,10 @@ class FeatureExtraction(LightningModule):
     def save_to_drive(self, vid_index):
         acc, ppv, tpr, keys, f1 = self.get_phase_acc(self.current_phase_labels,
                                                      self.current_p_phases)
-        save_path = self.pickle_path / f"{self.hparams.fps_sampling_test}fps"
+        save_path = self.pickle_path / f"{self.params.fps_sampling_test}fps"
         save_path.mkdir(exist_ok=True)
-        save_path_txt = save_path / f"video_{vid_index}_{self.hparams.fps_sampling_test}fps_acc.txt"
-        save_path_vid = save_path / f"video_{vid_index}_{self.hparams.fps_sampling_test}fps.pkl"
+        save_path_txt = save_path / f"video_{vid_index}_{self.params.fps_sampling_test}fps_acc.txt"
+        save_path_vid = save_path / f"video_{vid_index}_{self.params.fps_sampling_test}fps.pkl"
 
         with open(save_path_txt, "w") as f:
             f.write(
@@ -173,7 +172,7 @@ class FeatureExtraction(LightningModule):
             self.current_phase_labels.extend(
                 np.asarray(y_phase_numpy[index:index_next]).tolist())
 
-        if (batch_idx + 1) * self.hparams.batch_size >= self.len_test_data:
+        if (batch_idx + 1) * self.params.batch_size >= self.len_test_data:
             self.save_to_drive(vid_idx)
             print(f"Finished extracting all videos...")
 
@@ -196,25 +195,25 @@ class FeatureExtraction(LightningModule):
         :return: list of optimizers
         """
         optimizer = optim.Adam(self.parameters(),
-                               lr=self.hparams.learning_rate)
+                               lr=self.params.learning_rate)
         #scheduler = optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=10)
         return [optimizer]  #, [scheduler]
 
     def __dataloader(self, split=None):
         dataset = self.dataset.data[split]
-        if self.hparams.batch_size > self.hparams.model_specific_batch_size_max:
+        if self.params.batch_size > self.params.model_specific_batch_size_max:
             print(
                 f"The choosen batchsize is too large for this model."
-                f" It got automatically reduced from: {self.hparams.batch_size} to {self.hparams.model_specific_batch_size_max}"
+                f" It got automatically reduced from: {self.params.batch_size} to {self.params.model_specific_batch_size_max}"
             )
-            self.hparams.batch_size = self.hparams.model_specific_batch_size_max
+            self.params.batch_size = self.params.model_specific_batch_size_max
 
         if split == "val" or split == "test":
             should_shuffle = False
         else:
             should_shuffle = True
         print(f"split: {split} - shuffle: {should_shuffle}")
-        worker = self.hparams.num_workers
+        worker = self.params.num_workers
         if split == "test":
             print(
                 "worker set to 0 due to test"
@@ -223,7 +222,7 @@ class FeatureExtraction(LightningModule):
 
         loader = DataLoader(
             dataset=dataset,
-            batch_size=self.hparams.batch_size,
+            batch_size=self.params.batch_size,
             shuffle=should_shuffle,
             num_workers=worker,
             pin_memory=True,
@@ -236,8 +235,7 @@ class FeatureExtraction(LightningModule):
         :return: train loader
         """
         dataloader = self.__dataloader(split="train")
-        logging.info("training data loader called - size: {}".format(
-            len(dataloader.dataset)))
+        print("training data loader called - size: {}".format(len(dataloader.dataset)))
         return dataloader
 
     def val_dataloader(self):
@@ -246,15 +244,13 @@ class FeatureExtraction(LightningModule):
         :return: validation loader
         """
         dataloader = self.__dataloader(split="val")
-        logging.info("validation data loader called - size: {}".format(
-            len(dataloader.dataset)))
+        print("validation data loader called - size: {}".format(len(dataloader.dataset)))
         return dataloader
 
 
     def test_dataloader(self):
         dataloader = self.__dataloader(split="test")
-        logging.info("test data loader called  - size: {}".format(
-            len(dataloader.dataset)))
+        print("test data loader called  - size: {}".format(len(dataloader.dataset)))
         print(f"starting video idx for testing: {self.current_video_idx}")
         self.set_export_pickle_path()
         return dataloader

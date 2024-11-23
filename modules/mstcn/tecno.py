@@ -3,8 +3,9 @@ import torch
 from torch import optim
 from torch.utils.data.distributed import DistributedSampler
 from torch.utils.data import DataLoader
-from pytorch_lightning.metrics.utils import _input_format_classification
-from pytorch_lightning.core.lightning import LightningModule
+from pytorch_lightning import LightningModule
+from torchmetrics.utilities.checks import _input_format_classification
+
 from utils.metric_helper import AccuracyStages, RecallOverClasse, PrecisionOverClasses
 from torch import nn
 import numpy as np

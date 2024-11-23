@@ -1,8 +1,8 @@
 import pandas as pd
+from albumentations.pytorch import ToTensorV2
 from torch.utils.data import Dataset
 from pathlib import Path
 import numpy as np
-from albumentations.pytorch.transforms import ToTensorV2
 from PIL import Image
 from albumentations import (
     Compose,
@@ -12,6 +12,7 @@ from albumentations import (
 )
 import torch
 
+
 class Cholec80FeatureExtract:
     def __init__(self, hparams):
         self.hparams = hparams
@@ -20,45 +21,56 @@ class Cholec80FeatureExtract:
         self.input_width = hparams.input_width
         self.fps_sampling = hparams.fps_sampling
         self.fps_sampling_test = hparams.fps_sampling_test
-        self.cholec_root_dir = Path(self.hparams.data_root +
-                                    "/cholec80")  # videos splitted in images
+        self.cholec_root_dir = Path(self.hparams.data_root)  # videos splitted in images
         self.transformations = self.__get_transformations()
         self.class_labels = [
-            "Preparation",
-            "CalotTriangleDissection",
-            "ClippingCutting",
-            "GallbladderDissection",
-            "GallbladderPackaging",
-            "CleaningCoagulation",
-            "GallbladderRetraction",
+            "Incision",
+            "Viscoelastic",
+            "Capsulorhexis",
+            "Hydrodissection",
+            "Phacoemulsification",
+            "IrrigationAspiration",
+            "CapsulePolishing",
+            "LensImplantation",
+            "LensPositioning",
+            "AnteriorChamberFlushing",
+            "ViscoelasticSuction",
+            "TonifyingAntibiotics",
+            "Idle"
         ]
         weights = [
-            1.6411019141231247,
-            0.19090963801041133,
+            2.2861910721735503,
+            1.6481203007518797,
+            0.607202216066482,
+            0.8426879901583885,
+            0.17998489177915722,
+            0.42886210674596964,
+            1.558589306029579,
+            1.4715359828141783,
+            1.927541329581428,
+            1.687192118226601,
+            0.6410856340664483,
             1.0,
-            0.2502662616859295,
-            1.9176363911137977,
-            0.9840248158200853,
-            2.174635818337618,
+            0.3205990756450009
         ]
         self.class_weights = np.asarray(weights)
         self.label_col = "class"
         self.df = {}
         self.df["all"] = pd.read_pickle(
-            self.cholec_root_dir / "dataframes/cholec_split_250px_25fps.pkl")
+            self.cholec_root_dir / "cataract_split_250px_5fps.pkl")
 
         #print("Drop nan rows from df manually")
         ## Manually remove these indices as they are nan in the DF which causes issues
-        index_nan = [1983913, 900090]
-        #self.df["all"][self.df["all"].isna().any(axis=1)]
-        self.df["all"] = self.df["all"].drop(index_nan)
+        # index_nan = [1983913, 900090]
+        # #self.df["all"][self.df["all"].isna().any(axis=1)]
+        # self.df["all"] = self.df["all"].drop(index_nan)
         assert self.df["all"].isnull().sum().sum(
         ) == 0, "Dataframe contains nan Elements"
         self.df["all"] = self.df["all"].reset_index()
 
-        self.vids_for_training = [i for i in range(1, 41)]
-        self.vids_for_val = [i for i in range(41, 49)]
-        self.vids_for_test = [i for i in range(49, 81)]
+        self.vids_for_training = [i for i in range(0, 40)]
+        self.vids_for_val = [i for i in range(40, 48)]
+        self.vids_for_test = [i for i in range(48, 56)]
 
         self.df["train"] = self.df["all"][self.df["all"]["video_idx"].isin(
             self.vids_for_training)]
@@ -68,7 +80,7 @@ class Cholec80FeatureExtract:
             print(
                 f"test extract enabled. Test will be used to extract the videos (testset = all)"
             )
-            self.vids_for_test = [i for i in range(1, 81)]
+            self.vids_for_test = [i for i in range(1, 56)]
             self.df["test"] = self.df["all"]
         else:
             self.df["test"] = self.df["all"][self.df["all"]["video_idx"].isin(
@@ -79,25 +91,25 @@ class Cholec80FeatureExtract:
             "val": len(self.df["val"]),
             "test": len(self.df["test"])
         }
-        if self.fps_sampling < 25 and self.fps_sampling > 0:
-            factor = int(25 / self.fps_sampling)
-            print(
-                f"Subsampling(factor: {factor}) data: 25fps > {self.fps_sampling}fps"
-            )
-            self.df["train"] = self.df["train"].iloc[::factor]
-            self.df["val"] = self.df["val"].iloc[::factor]
-            self.df["all"] = self.df["all"].iloc[::factor]
-            for split in ["train", "val"]:
-                print(
-                    f"{split:>7}: {len_org[split]:8} > {len(self.df[split])}")
-        if hparams.fps_sampling_test < 25 and self.fps_sampling_test > 0:
-            factor = int(25 / self.fps_sampling_test)
-            print(
-                f"Subsampling(factor: {factor}) data: 25fps > {self.fps_sampling}fps"
-            )
-            self.df["test"] = self.df["test"].iloc[::factor]
-            split = "test"
-            print(f"{split:>7}: {len_org[split]:8} > {len(self.df[split])}")
+        # if self.fps_sampling < 25 and self.fps_sampling > 0:
+        #     factor = int(25 / self.fps_sampling)
+        #     print(
+        #         f"Subsampling(factor: {factor}) data: 25fps > {self.fps_sampling}fps"
+        #     )
+        #     self.df["train"] = self.df["train"].iloc[::factor]
+        #     self.df["val"] = self.df["val"].iloc[::factor]
+        #     self.df["all"] = self.df["all"].iloc[::factor]
+        #     for split in ["train", "val"]:
+        #         print(
+        #             f"{split:>7}: {len_org[split]:8} > {len(self.df[split])}")
+        # if hparams.fps_sampling_test < 25 and self.fps_sampling_test > 0:
+        #     factor = int(25 / self.fps_sampling_test)
+        #     print(
+        #         f"Subsampling(factor: {factor}) data: 25fps > {self.fps_sampling}fps"
+        #     )
+        #     self.df["test"] = self.df["test"].iloc[::factor]
+        #     split = "test"
+        #     print(f"{split:>7}: {len_org[split]:8} > {len(self.df[split])}")
 
         self.data = {}
 
@@ -108,13 +120,9 @@ class Cholec80FeatureExtract:
                     self.df[split],
                     self.transformations[split],
                     self.label_col,
-                    img_root=self.cholec_root_dir / "cholec_split_250px_25fps",
+                    img_root="images/",
                     image_path_col="image_path",
-                    add_label_cols=[
-                        "tool_Grasper", "tool_Bipolar", "tool_Hook",
-                        "tool_Scissors", "tool_Clipper", "tool_Irrigator",
-                        "tool_SpecimenBag"
-                    ])
+                    add_label_cols=[])
             # here we want to extract all features
             #self.df["test"] = self.df["all"].reset_index()
             self.df["test"] = self.df["test"].reset_index()
@@ -122,13 +130,9 @@ class Cholec80FeatureExtract:
                 self.df["test"],
                 self.transformations["test"],
                 self.label_col,
-                img_root=self.cholec_root_dir / "cholec_split_250px_25fps",
+                img_root="images/",
                 image_path_col="image_path",
-                add_label_cols=[
-                    "video_idx", "image_path", "index", "tool_Grasper",
-                    "tool_Bipolar", "tool_Hook", "tool_Scissors",
-                    "tool_Clipper", "tool_Irrigator", "tool_SpecimenBag"
-                ])
+                add_label_cols=[])
 
         if self.dataset_mode == "vid_multilabel":
             for split in ["train", "val", "test"]:
@@ -142,8 +146,8 @@ class Cholec80FeatureExtract:
                 )
 
     def __get_transformations(self):
-        norm_mean = [0.3456, 0.2281, 0.2233]
-        norm_std = [0.2528, 0.2135, 0.2104]
+        norm_mean = [0.3183, 0.2889, 0.2074]
+        norm_std = [0.2991, 0.2494, 0.2164]
         normalize = Normalize(mean=norm_mean, std=norm_std)
         training_augmentation = Compose([
             ShiftScaleRotate(shift_limit=0.1,
@@ -168,15 +172,6 @@ class Cholec80FeatureExtract:
         ])
         data_transformations["test"] = data_transformations["val"]
         return data_transformations
-
-    def median_frequency_weights(
-            self, file_list):  ## do only once and define weights in class
-        frequency = [0, 0, 0, 0, 0, 0, 0]
-        for i in file_list:
-            frequency[int(i[1])] += 1
-        median = np.median(frequency)
-        weights = [median / j for j in frequency]
-        return weights
 
     @staticmethod
     def add_dataset_specific_args(parser):  # pragma: no cover
@@ -276,7 +271,7 @@ class Dataset_from_Dataframe(Dataset):
 
     def load_from_path(self, index):
         img_path_df = self.df.loc[index, self.image_path_col]
-        p = self.img_root / img_path_df
+        p = f"{self.img_root}/{img_path_df}"
         X = Image.open(p)
         X_array = np.array(X)
         return X_array, p

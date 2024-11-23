@@ -4,6 +4,7 @@ from pytorch_lightning.callbacks import ModelCheckpoint, EarlyStopping
 import logging
 from pytorch_lightning import Trainer
 from pytorch_lightning.loggers import TensorBoardLogger, WandbLogger
+from pytorch_lightning.utilities.types import ValidationStep
 
 from utils.utils import (
     argparse_summary,
@@ -43,7 +44,6 @@ def train(hparams, ModuleClass, ModelClass, DatasetClass, logger):
         verbose=True,
         monitor=hparams.early_stopping_metric,
         mode='max',
-        prefix=hparams.name,
         filename=f'{{epoch}}-{{{hparams.early_stopping_metric}:.2f}}'
     )
     early_stop_callback = EarlyStopping(
@@ -54,28 +54,32 @@ def train(hparams, ModuleClass, ModelClass, DatasetClass, logger):
 
 
     trainer = Trainer(
-        gpus=hparams.gpus,
+        accelerator='mps',  # Updated for specifying device type
+        devices=1,  # Specify the number of GPUs or fallback to CPU
         logger=logger,
-        fast_dev_run=hparams.fast_dev_run,
+        # fast_dev_run=True,
         min_epochs=hparams.min_epochs,
         max_epochs=hparams.max_epochs,
-        checkpoint_callback=checkpoint_callback,
-        resume_from_checkpoint=hparams.resume_from_checkpoint,
-        callbacks=[early_stop_callback],
-        weights_summary='full',
+        callbacks=[
+            checkpoint_callback,  # Checkpoint callback
+            early_stop_callback  # Early stopping callback
+        ],
+        enable_checkpointing=True,  # Explicitly enable checkpointing
+        resume_from_checkpoint=hparams.resume_from_checkpoint,  # Deprecated; see below
+        enable_model_summary=True,
         num_sanity_val_steps=hparams.num_sanity_val_steps,
-        log_every_n_steps=hparams.log_every_n_steps
+        log_every_n_steps=hparams.log_every_n_steps,
     )
     # ------------------------
     # 4 START TRAINING
     # ------------------------
 
     trainer.fit(module)
-    print(
-        f"Best: {checkpoint_callback.best_model_score} | monitor: {checkpoint_callback.monitor} | path: {checkpoint_callback.best_model_path}"
-        f"\nTesting..."
-    )
-    trainer.test(ckpt_path=checkpoint_callback.best_model_path)
+    # print(
+    #     f"Best: {checkpoint_callback.best_model_score} | monitor: {checkpoint_callback.monitor} | path: {checkpoint_callback.best_model_path}"
+    #     f"\nTesting..."
+    # )
+    # trainer.test(ckpt_path=checkpoint_callback.best_model_path)
 
 
 
@@ -123,13 +127,13 @@ if __name__ == "__main__":
     hparams.output_path = Path(hparams.output_path).absolute() / hparams.name
 
     tb_logger = TensorBoardLogger(hparams.output_path, name='tb')
-    wandb_logger = WandbLogger(name = hparams.name, project="tecno")
+    # wandb_logger = WandbLogger(name = hparams.name, project="tecno")
 
     argparse_summary(hparams, parser)
     print('Output path: ', hparams.output_path)
 
 
-    loggers = [tb_logger, wandb_logger]
+    loggers = [tb_logger]
     # ---------------------
     # RUN TRAINING
     # ---------------------
