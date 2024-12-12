@@ -121,11 +121,12 @@ class DilatedResidualLayer(nn.Module):
 
     def forward(self, x):
         out = F.relu(self.conv_dilated(x))
+        # since the padding is two-sided, cut out redundant output features to maintain vector length
         if self.causal_conv:
             out = out[:, :, :-(self.dilation * 2)]
         out = self.conv_1x1(out)
         out = self.dropout(out)
-        return (x + out)
+        return x + out
 
 
 class DilatedSmoothLayer(nn.Module):

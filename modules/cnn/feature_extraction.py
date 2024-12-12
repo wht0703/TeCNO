@@ -138,10 +138,7 @@ class FeatureExtraction(LightningModule):
             ], f)
 
     def test_step(self, batch, batch_idx):
-
-        x, y_phase, (vid_idx, img_name, img_index, tool_Grasper, tool_Bipolar,
-               tool_Hook, tool_Scissors, tool_Clipper, tool_Irrigator,
-               tool_SpecimenBag) = batch
+        x, y_phase, (vid_idx, img_name, img_index) = batch
         vid_idx_raw = vid_idx.cpu().numpy()
         with torch.no_grad():
             stem, y_hat, _ = self.forward(x)
@@ -196,8 +193,8 @@ class FeatureExtraction(LightningModule):
         """
         optimizer = optim.Adam(self.parameters(),
                                lr=self.params.learning_rate)
-        #scheduler = optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=10)
-        return [optimizer]  #, [scheduler]
+        scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min', factor=0.1, patience=5)
+        return {"optimizer": optimizer, "lr_scheduler": scheduler, "monitor": "val_loss"}
 
     def __dataloader(self, split=None):
         dataset = self.dataset.data[split]

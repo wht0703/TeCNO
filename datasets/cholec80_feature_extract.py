@@ -58,12 +58,6 @@ class Cholec80FeatureExtract:
         self.df = {}
         self.df["all"] = pd.read_pickle(
             self.cholec_root_dir / "cataract_split_250px_5fps.pkl")
-
-        #print("Drop nan rows from df manually")
-        ## Manually remove these indices as they are nan in the DF which causes issues
-        # index_nan = [1983913, 900090]
-        # #self.df["all"][self.df["all"].isna().any(axis=1)]
-        # self.df["all"] = self.df["all"].drop(index_nan)
         assert self.df["all"].isnull().sum().sum(
         ) == 0, "Dataframe contains nan Elements"
         self.df["all"] = self.df["all"].reset_index()
@@ -91,25 +85,6 @@ class Cholec80FeatureExtract:
             "val": len(self.df["val"]),
             "test": len(self.df["test"])
         }
-        # if self.fps_sampling < 25 and self.fps_sampling > 0:
-        #     factor = int(25 / self.fps_sampling)
-        #     print(
-        #         f"Subsampling(factor: {factor}) data: 25fps > {self.fps_sampling}fps"
-        #     )
-        #     self.df["train"] = self.df["train"].iloc[::factor]
-        #     self.df["val"] = self.df["val"].iloc[::factor]
-        #     self.df["all"] = self.df["all"].iloc[::factor]
-        #     for split in ["train", "val"]:
-        #         print(
-        #             f"{split:>7}: {len_org[split]:8} > {len(self.df[split])}")
-        # if hparams.fps_sampling_test < 25 and self.fps_sampling_test > 0:
-        #     factor = int(25 / self.fps_sampling_test)
-        #     print(
-        #         f"Subsampling(factor: {factor}) data: 25fps > {self.fps_sampling}fps"
-        #     )
-        #     self.df["test"] = self.df["test"].iloc[::factor]
-        #     split = "test"
-        #     print(f"{split:>7}: {len_org[split]:8} > {len(self.df[split])}")
 
         self.data = {}
 
@@ -122,9 +97,8 @@ class Cholec80FeatureExtract:
                     self.label_col,
                     img_root="images/",
                     image_path_col="image_path",
-                    add_label_cols=[])
+                    add_label_cols=["video_idx", "image_path", "index"])
             # here we want to extract all features
-            #self.df["test"] = self.df["all"].reset_index()
             self.df["test"] = self.df["test"].reset_index()
             self.data["test"] = Dataset_from_Dataframe(
                 self.df["test"],
