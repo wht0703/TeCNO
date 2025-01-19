@@ -97,16 +97,16 @@ class Cholec80FeatureExtract:
                     self.label_col,
                     img_root="images/",
                     image_path_col="image_path",
-                    add_label_cols=["video_idx", "image_path", "index"])
+                    add_label_cols=[])
             # here we want to extract all features
-            self.df["test"] = self.df["test"].reset_index()
+            self.df["test"] = self.df["all"].reset_index()
             self.data["test"] = Dataset_from_Dataframe(
                 self.df["test"],
                 self.transformations["test"],
                 self.label_col,
                 img_root="images/",
                 image_path_col="image_path",
-                add_label_cols=[])
+                add_label_cols=["video_idx", "image_path"])
 
         if self.dataset_mode == "vid_multilabel":
             for split in ["train", "val", "test"]:

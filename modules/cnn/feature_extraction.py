@@ -138,10 +138,10 @@ class FeatureExtraction(LightningModule):
             ], f)
 
     def test_step(self, batch, batch_idx):
-        x, y_phase, (vid_idx, img_name, img_index) = batch
+        x, y_phase, (vid_idx, img_name) = batch
         vid_idx_raw = vid_idx.cpu().numpy()
         with torch.no_grad():
-            stem, y_hat, _ = self.forward(x)
+            stem, y_hat = self.forward(x)
         self.test_acc_phase(y_hat, y_phase)
         #self.log("test_acc_phase", self.test_acc_phase, on_epoch=True, on_step=True)
         vid_idxs, indexes = np.unique(vid_idx_raw, return_index=True)
