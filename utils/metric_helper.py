@@ -1,13 +1,9 @@
 import torch
-from pycm import ConfusionMatrix
 import numpy as np
-from typing import Any, Callable, Optional, Union
 
-from pytorch_lightning.metrics import Metric
-from pytorch_lightning.metrics.utils import _input_format_classification
-
-from pytorch_lightning.metrics import Precision, Recall
-
+from torchmetrics import Metric
+from torchmetrics.utilities.data import to_onehot
+from torchmetrics.classification import Precision, Recall
 
 '''The two following measures are defined per phase: Recall is defined as the number of correct detections inside the 
 ground truth phase divided by its length. Precision is the sum of correct detec- tions divided by the number of 
@@ -18,22 +14,18 @@ lengths can vary largely, incorrect detections inside short phases tend to be hi
 but are revealed within precision and recall'''
 
 
-
-
-
 class PrecisionOverClasses(Precision):
-    def __init__(self, num_classes: int = 1, threshold: float = 0.5, average: str = 'micro', multilabel: bool = False,
-            compute_on_step: bool = True, dist_sync_on_step: bool = False, process_group: Optional[Any] = None, ):
-        super().__init__(num_classes=num_classes, threshold=threshold, average=average, multilabel=multilabel,
-                         compute_on_step=compute_on_step, dist_sync_on_step=dist_sync_on_step, process_group=process_group)
+    def __init__(self, task="multiclass", num_classes=1, threshold=0.5, average='micro'):
+        super().__init__(task=task, num_classes=num_classes, threshold=threshold, average=average)
+
     def compute(self):
-        return self.true_positives.float() / self.predicted_positives
+        return self.tp.float() / (self.tp.add(self.fp).float())
+
 
 class RecallOverClasse(Recall):
-    def __init__(self, num_classes: int = 1, threshold: float = 0.5, average: str = 'micro', multilabel: bool = False,
-            compute_on_step: bool = True, dist_sync_on_step: bool = False, process_group: Optional[Any] = None, ):
-        super().__init__(num_classes=num_classes, threshold=threshold, average=average, multilabel=multilabel,
-                         compute_on_step=compute_on_step, dist_sync_on_step=dist_sync_on_step, process_group=process_group)
+    def __init__(self, task="multiclass", num_classes=1, threshold=0.5, average='micro'):
+        super().__init__(task=task, num_classes=num_classes, threshold=threshold, average=average)
+
     def compute(self):
         return self.true_positives.float() / self.actual_positives
 
@@ -49,8 +41,10 @@ class AccuracyStages(Metric):
     def update(self, preds: torch.Tensor, target: torch.Tensor):
         self.total += target.numel()
         for s in range(self.num_stages):
-            preds_stage, target = _input_format_classification(preds[s], target, threshold=0.5)
-            assert preds_stage.shape == target.shape
+            preds_stage = to_onehot(preds[s].argmax(dim=1), num_classes=target.max().item()+1)
+            target_onehot = to_onehot(target, num_classes=target.max().item()+1)
+
+            assert preds_stage.shape == target_onehot.shape
 
             s_correct = getattr(self, f"S{s + 1}_correct")
             s_correct += torch.sum(preds_stage == target)
@@ -83,5 +77,3 @@ def create_print_output(print_dict, space_desc, space_item):
         msg += "\n"
     msg = msg[:-1]
     return msg
-
-

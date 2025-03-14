@@ -1,5 +1,5 @@
 module : cnn.feature_extraction.FeatureExtraction
-model : cnn.OneHeadResNet50Model
+model : efficient_net_cnn.OneHeadEfficientNetModel
 data_root : dataframes
 dataset : cholec80_feature_extract.Cholec80FeatureExtract
 out_features : 13

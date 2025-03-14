@@ -35,13 +35,19 @@ class Cholec80():
         self.name = "Cholec80Pickle"
         self.hparams = hparams
         self.class_labels = [
-            "Preparation",
-            "CalotTriangleDissection",
-            "ClippingCutting",
-            "GallbladderDissection",
-            "GallbladderPackaging",
-            "CleaningCoagulation",
-            "GallbladderRetraction",
+            "Incision",
+            "Viscoelastic",
+            "Capsulorhexis",
+            "Hydrodissection",
+            "Phacoemulsification",
+            "IrrigationAspiration",
+            "CapsulePolishing",
+            "LensImplantation",
+            "LensPositioning",
+            "AnteriorChamberFlushing",
+            "ViscoelasticSuction",
+            "TonifyingAntibiotics",
+            "Idle"
         ]
         self.out_features = self.hparams.out_features
         self.features_per_seconds = hparams.features_per_seconds
@@ -52,25 +58,31 @@ class Cholec80():
 
         self.data_p = {}
         self.data_p["train"] = [(
-            f"{self.features_per_seconds:.1f}fps/video_{i:02d}_{self.features_per_seconds:.1f}fps.pkl"
-        ) for i in range(1, 41)]
+            f"{self.features_per_seconds:.1f}fps/video_{i}_{self.features_per_seconds:.1f}fps.pkl"
+        ) for i in range(0, 40)]
         self.data_p["val"] = [(
-            f"{self.features_per_seconds:.1f}fps/video_{i:02d}_{self.features_per_seconds:.1f}fps.pkl"
-        ) for i in range(41, 49)]
+            f"{self.features_per_seconds:.1f}fps/video_{i}_{self.features_per_seconds:.1f}fps.pkl"
+        ) for i in range(40, 48)]
         self.data_p["test"] = [(
-            f"{self.features_per_seconds:.1f}fps/video_{i:02d}_{self.features_per_seconds:.1f}fps.pkl"
-        ) for i in range(49, 81)]
+            f"{self.features_per_seconds:.1f}fps/video_{i}_{self.features_per_seconds:.1f}fps.pkl"
+        ) for i in range(48, 56)]
 
         # Datasplit is equal to Endonet and Multi-Task Recurrent ConvNet with correlation loss for surgical vid analysis
         self.weights = {}
         self.weights["train"] = [
-            1.6411019141231247,
-            0.19090963801041133,
+            2.2861910721735503,
+            1.6481203007518797,
+            0.607202216066482,
+            0.8426879901583885,
+            0.17998489177915722,
+            0.42886210674596964,
+            1.558589306029579,
+            1.4715359828141783,
+            1.927541329581428,
+            1.687192118226601,
+            0.6410856340664483,
             1.0,
-            0.2502662616859295,
-            1.9176363911137977,
-            0.9840248158200853,
-            2.174635818337618,
+            0.3205990756450009
         ]
         self.weights["train_log"] = [1.25, 0.5, 1.0, 0.25, 1.25, 1., 1.5]
 

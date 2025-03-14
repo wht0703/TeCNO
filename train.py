@@ -3,8 +3,7 @@ from pathlib import Path
 from pytorch_lightning.callbacks import ModelCheckpoint, EarlyStopping
 import logging
 from pytorch_lightning import Trainer
-from pytorch_lightning.loggers import TensorBoardLogger, WandbLogger
-from pytorch_lightning.utilities.types import ValidationStep
+from pytorch_lightning.loggers import TensorBoardLogger
 
 from utils.utils import (
     argparse_summary,
@@ -74,12 +73,12 @@ def train(hparams, ModuleClass, ModelClass, DatasetClass, logger):
     # 4 START TRAINING
     # ------------------------
 
-    # trainer.fit(module)
-    # print(
-    #     f"Best: {checkpoint_callback.best_model_score} | monitor: {checkpoint_callback.monitor} | path: {checkpoint_callback.best_model_path}"
-    #     f"\nTesting..."
+    trainer.fit(module)
+    # #print(
+    #      f"Best: {checkpoint_callback.best_model_score} | monitor: {checkpoint_callback.monitor} | path: {checkpoint_callback.best_model_path}"
+    #      f"\nTesting..."
     # )
-    trainer.test(ckpt_path='./logs/241212-135943_FeatureExtraction_Cholec80FeatureExtract_cnn_OneHeadResNet50Model/checkpoints/epoch=7-val_acc_phase=0.94.ckpt', model=module)
+    #trainer.test(ckpt_path='./logs/241212-135943_FeatureExtraction_Cholec80FeatureExtract_cnn_OneHeadResNet50Model/checkpoints/epoch=7-val_acc_phase=0.94.ckpt', model=module)
 
 
 

@@ -14,7 +14,7 @@ import numpy as np
 class TeCNO(LightningModule):
     def __init__(self, hparams, model, dataset):
         super(TeCNO, self).__init__()
-        self.hparams = hparams
+        self.params = hparams
         self.batch_size = hparams.batch_size
         self.dataset = dataset
         self.model = model
@@ -23,13 +23,13 @@ class TeCNO(LightningModule):
         self.init_metrics()
 
     def init_metrics(self):
-        self.train_acc_stages = AccuracyStages(num_stages=self.hparams.mstcn_stages)
-        self.val_acc_stages = AccuracyStages(num_stages=self.hparams.mstcn_stages)
+        self.train_acc_stages = AccuracyStages(num_stages=self.params.mstcn_stages)
+        self.val_acc_stages = AccuracyStages(num_stages=self.params.mstcn_stages)
         self.max_acc_last_stage = {"epoch": 0, "acc": 0}
         self.max_acc_global = {"epoch": 0, "acc": 0 , "stage": 0, "last_stage_max_acc_is_global": False}
 
-        self.precision_metric = PrecisionOverClasses(num_classes=7)
-        self.recall_metric = RecallOverClasse(num_classes=7)
+        self.precision_metric = PrecisionOverClasses(task='multiclass', num_classes=13)
+        self.recall_metric = RecallOverClasse(task='multiclass', num_classes=13)
         #self.cm_metric = ConfusionMatrix(num_classes=10)
 
     def forward(self, x):
@@ -173,7 +173,7 @@ class TeCNO(LightningModule):
 
     def configure_optimizers(self):
         optimizer = optim.Adam(self.parameters(),
-                               lr=self.hparams.learning_rate)
+                               lr=self.params.learning_rate)
         return [optimizer]  #, [scheduler]
 
     def __dataloader(self, split=None):
@@ -183,16 +183,16 @@ class TeCNO(LightningModule):
             should_shuffle = True
         # when using multi-node (ddp) we need to add the  datasampler
         train_sampler = None
-        if self.use_ddp:
-            train_sampler = DistributedSampler(dataset)
-            should_shuffle = False
+        # if self.use_ddp:
+        #     train_sampler = DistributedSampler(dataset)
+        #     should_shuffle = False
         print(f"split: {split} - shuffle: {should_shuffle}")
         loader = DataLoader(
             dataset=dataset,
-            batch_size=self.hparams.batch_size,
+            batch_size=self.params.batch_size,
             shuffle=should_shuffle,
             sampler=train_sampler,
-            num_workers=self.hparams.num_workers,
+            num_workers=self.params.num_workers,
             pin_memory=True,
         )
         return loader
