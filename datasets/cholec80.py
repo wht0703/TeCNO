@@ -51,7 +51,7 @@ class Cholec80():
         ]
         self.out_features = self.hparams.out_features
         self.features_per_seconds = hparams.features_per_seconds
-        hparams.factor_sampling = (int(25 / hparams.features_subsampling))
+        hparams.factor_sampling = (int(1 / hparams.features_subsampling))
         print(
             f"Subsampling features: 25features_ps --> {hparams.features_subsampling}features_ps (factor: {hparams.factor_sampling})"
         )
@@ -84,7 +84,7 @@ class Cholec80():
             1.0,
             0.3205990756450009
         ]
-        self.weights["train_log"] = [1.25, 0.5, 1.0, 0.25, 1.25, 1., 1.5]
+        self.weights["train_log"] = [2.2861910721735503, 1.6481203007518797, 0.607202216066482, 0.8426879901583885, 0.17998489177915722, 0.42886210674596964, 1.558589306029579, 1.4715359828141783, 1.927541329581428, 1.687192118226601, 0.6410856340664483, 1.0, 0.3205990756450009]
 
         self.data = {}
         for split in ["train", "val", "test"]:

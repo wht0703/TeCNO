@@ -9,7 +9,7 @@ def median_frequency_weights(dataframes, class_num):
         frequency[i] = len(df[df["class"] == i])
     median = np.median(frequency)
     print(np.sum(frequency))
-    weights = [median / j for j in frequency]
+    weights = [float(median / j) for j in frequency]
     return weights
 
 if __name__ == '__main__':

@@ -74,7 +74,7 @@ class TeCNO(LightningModule):
                 self.log(f"{step}_recall_{self.dataset.class_labels[n]}",p ,on_step=True, on_epoch=True)'''
 
     def calc_precision_and_recall(self, y_pred, y_true, step="val"):
-        y_max_pred, y_true = _input_format_classification(y_pred[-1], y_true, threshold=0.5)
+        y_max_pred, y_true, _ = _input_format_classification(y_pred[-1], y_true, threshold=0.5)
         precision = self.precision_metric(y_max_pred, y_true)
         recall = self.recall_metric(y_max_pred, y_true)
         #if step == "val":
@@ -86,14 +86,12 @@ class TeCNO(LightningModule):
         recall_list = [o["recall"] for o in outputs]
         x = torch.stack(precision_list)
         y = torch.stack(recall_list)
-        phase_avg_precision = [torch.mean(x[~x[:, n].isnan(), n]) for n in range(x.shape[1])]
-        phase_avg_recall = [torch.mean(y[~y[:, n].isnan(), n]) for n in range(x.shape[1])]
-        phase_avg_precision = torch.stack(phase_avg_precision)
-        phase_avg_recall = torch.stack(phase_avg_recall)
-        phase_avg_precision_over_video = phase_avg_precision[~phase_avg_precision.isnan()].mean()
-        phase_avg_recall_over_video = phase_avg_recall[~phase_avg_recall.isnan()].mean()
-        self.log(f"{step}_avg_precision", phase_avg_precision_over_video, on_epoch=True, on_step=False)
-        self.log(f"{step}_avg_recall", phase_avg_recall_over_video, on_epoch=True, on_step=False)
+        phase_avg_precision = torch.mean(x, dim=0)
+        phase_avg_recall = torch.mean(y, dim=0)
+        # phase_avg_precision_over_video = phase_avg_precision[~phase_avg_precision.isnan()].mean()
+        # phase_avg_recall_over_video = phase_avg_recall[~phase_avg_recall.isnan()].mean()
+        self.log(f"{step}_avg_precision", phase_avg_precision, on_epoch=True, on_step=False)
+        self.log(f"{step}_avg_recall", phase_avg_recall, on_epoch=True, on_step=False)
 
     def training_step(self, batch, batch_idx):
         stem, y_hat, y_true = batch
