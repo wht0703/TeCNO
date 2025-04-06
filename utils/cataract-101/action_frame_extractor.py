@@ -39,7 +39,7 @@ def extract_action_frames(video_path: str = '../../videos_cataract_101', annotat
 
         last_frame = 0
         for j in range(len(labels)):
-            # Do padding with idle state at the start of the video
+            # padding with idle state during the start of the video
             if last_frame != annotations[j][0]:
                 frame_start = 0
                 frame_end = annotations[j][0] - 1
@@ -51,7 +51,6 @@ def extract_action_frames(video_path: str = '../../videos_cataract_101', annotat
             video_name = f'{seg_video}/{case_list[i]}_{labels[j]}_{frame_start}-{frame_end}.mp4'
             convert_frames_to_videos(video, frame_start, frame_end, case_folder, video_name)
         outer.update(1)
-        breakpoint()
 
 if __name__ == '__main__':
     extract_action_frames()
