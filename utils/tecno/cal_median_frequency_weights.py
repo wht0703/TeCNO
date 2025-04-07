@@ -13,4 +13,4 @@ def median_frequency_weights(dataframes, class_num):
     return weights
 
 if __name__ == '__main__':
-    print(median_frequency_weights('../../dataframes/cataract_split_250px_5fps.csv', 13))
+    print(median_frequency_weights('../../dataframes_cataract-101/cataract_split_250px_5fps.csv', 10))

@@ -35,7 +35,7 @@ if __name__ == '__main__':
             ToTensorV2(),
         ]
     )
-    train_dataset = TrainDataset('../../dataframes/cataract_split_250px_5fps.csv', '../../images', augs)
+    train_dataset = TrainDataset('../../dataframes_cataract-101/cataract_split_250px_5fps.csv', '../../images_cataract_101', augs)
     train_dataloader = DataLoader(train_dataset, batch_size=64, shuffle=False)
 
     psum = torch.tensor([0.0, 0.0, 0.0])
