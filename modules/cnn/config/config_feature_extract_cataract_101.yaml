@@ -1,6 +1,7 @@
 module : cnn.feature_extraction.FeatureExtraction
 model : cnn.OneHeadResNet50Model
-data_root : dataframes_cataract_101
+data_root : dataframes_cataract-101
+image_root: images_cataract_101
 dataset : cataract101_feature_extract.Cataract101FeatureExtract
 out_features : 13
 input_height : 224

@@ -20,6 +20,8 @@ def build_configargparser(parser):
         help="supports four options dp, ddp, ddp_spawn, ddp2",
     )
 
+    trainer_group.add_argument("--image_root", type=str, default="")
+
     trainer_group.add_argument("--resume_from_checkpoint",
                                type=str,
                                default=None)

@@ -21,7 +21,8 @@ class Cataract101FeatureExtract:
         self.input_width = hparams.input_width
         self.fps_sampling = hparams.fps_sampling
         self.fps_sampling_test = hparams.fps_sampling_test
-        self.cholec_root_dir = Path(self.hparams.data_root)  # videos splitted in images
+        self.cholec_root_dir = Path(self.hparams.data_root)
+        self.image_root = hparams.image_root # videos splitted in images
         self.transformations = self.__get_transformations()
         self.class_labels = [
             'Incision',
@@ -80,7 +81,7 @@ class Cataract101FeatureExtract:
                     self.df[split],
                     self.transformations[split],
                     self.label_col,
-                    img_root="images/",
+                    img_root=f"{self.image_root}/",
                     image_path_col="image_path",
                     add_label_cols=[])
             # here we want to extract all features
@@ -89,7 +90,7 @@ class Cataract101FeatureExtract:
                 self.df["test"],
                 self.transformations["test"],
                 self.label_col,
-                img_root="images/",
+                img_root=f"{self.image_root}/",
                 image_path_col="image_path",
                 add_label_cols=["video_idx", "image_path"])
 
