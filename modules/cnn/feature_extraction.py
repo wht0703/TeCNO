@@ -100,9 +100,14 @@ class FeatureExtraction(LightningModule):
         #     self.log("val_acc_tool", self.val_acc_tool, on_epoch=True, on_step=False)
         #     self.val_f1_tool(p_tool, torch.stack(y_tool, dim=1))
         #     self.log("val_f1_tool", self.val_f1_tool, on_epoch=True, on_step=False)
-        self.val_acc_phase(p_phase, y_phase)
-        self.log("val_acc_phase", self.val_acc_phase, on_epoch=True, on_step=False)
+        preds = torch.argmax(p_phase, dim=1)
+        self.val_acc_phase.update(preds, y_phase)
         self.log("val_loss", loss, prog_bar=True, logger=True, on_epoch=True, on_step=False)
+
+    def validation_epoch_end(self, outputs):
+        avg_acc = self.val_acc_phase.compute()
+        self.log("val_acc_phase", avg_acc, prog_bar=True, logger=True, on_epoch=True, on_step=False)
+        self.val_acc_phase.reset()
 
     def get_phase_acc(self, true_label, pred):
         pred = torch.FloatTensor(pred)
