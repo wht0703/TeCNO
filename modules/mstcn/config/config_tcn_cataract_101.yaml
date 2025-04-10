@@ -1,7 +1,7 @@
 module : mstcn.tecno.TeCNO
 model : mstcn.MultiStageModel
-dataset : cholec80.Cholec80
-out_features : 13
+dataset : cataract101.Cataract101
+out_features : 10
 num_workers : 3
 batch_size : 1
 features_per_seconds : 1
@@ -18,5 +18,5 @@ mstcn_stages : 2
 early_stopping_metric : val_acc
 save_top_k : 1
 gpus : ['1']
-data_root : /Users/haotongwang/Documents/programming/idp/TeCNO/logs/250119-122819_FeatureExtraction_Cholec80FeatureExtract_cnn_OneHeadResNet50Model/cholec80_pickle_export/
+data_root : /Users/haotongwang/Documents/programming/idp/TeCNO/logs/250410-140616_FeatureExtraction_Cataract101FeatureExtract_cnn_OneHeadResNet50Model/cholec80_pickle_export/
 num_sanity_val_steps: 0
