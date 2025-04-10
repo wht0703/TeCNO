@@ -3,7 +3,7 @@ model : cnn.OneHeadResNet50Model
 data_root : dataframes_cataract-101
 image_root : images_cataract_101
 dataset : cataract101_feature_extract.Cataract101FeatureExtract
-out_features : 13
+out_features : 10
 input_height : 224
 input_width : 224
 batch_size : 64
