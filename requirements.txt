@@ -13,4 +13,3 @@ torch~=2.5.1
 pillow~=11.0.0
 matplotlib~=3.9.2
 torchmetrics~=1.6.0
-seaborn

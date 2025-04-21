@@ -1,23 +1,28 @@
 # Table of Contents
-<img src="assets/tecno_logo.png"
-     alt="logo tecno"
-     width=150px
-     style="margin-right:50px"
-     align="right" />
-     
-1. [**About**](#about)
-2. [**Getting started**](#getting-started)
-     1. [**Prerequisites**](#prerequisites)
-     2. [**Usage**](#usage)
-3. [**Reference**](#reference)
-4. [**Contact**](#contact)
 
+<img src="assets/tecno_logo.png"
+alt="logo tecno"
+width=150px
+style="margin-right:50px"
+align="right" />
+
+1. [**About**](#about)
+2. [**Project Structure**](#project-structure)
+3. [**Getting started**](#getting-started)
+    1. [**Prerequisites**](#prerequisites)
+    2. [**Usage**](#usage)
+4. [**Disclamer**](#disclamer)
 
 # About
-TeCNO performs hierarchical prediction refinement with causal, dilated convolutions for surgical phase recognition and outperforms various state-of-the-art LSTM approaches!
-     
-Link to paper: [**TeCNO Paper**](https://arxiv.org/abs/2003.10751)
 
+This Project is an adapted version of the original project TeCNO ([**TeCNO**](https://github.com/tobiascz/TeCNO)),
+applying
+the model to surgical stage recognition in cataract surgeries.
+
+TeCNO performs hierarchical prediction refinement with causal, dilated convolutions for surgical phase recognition and
+outperforms various state-of-the-art LSTM approaches!
+
+Link to paper: [**TeCNO Paper**](https://arxiv.org/abs/2003.10751)
 
 <p align="center">
      <img src="assets/abstract_tecno.png"
@@ -25,10 +30,28 @@ Link to paper: [**TeCNO Paper**](https://arxiv.org/abs/2003.10751)
           width=1000px />
 </p>
 
+# Project Structure
+
+- `model/`contains implementations of CNN-based feature extractors and the multi-stage temporal convolutional network (
+  MS-TCN).
+
+- `datasets/` provides dataset classes and loading utilities.
+
+- `modules/` implements training, validation, and testing pipelines for both feature extractors and the MS-TCN.
+
+- `utils/` utility scripts for data conversion and preprocessing, including routines to transform given dataset formats
+  into the format required for model training.
+
 # Getting started
+
 Follow these steps to get the code running on your local machine!
 
 ## Prerequisites
+
+The implementation has been tested with Python 3.10.
+
+To install all required packages, run the following command, or install the dependencies listed in `requirements.txt`
+manually.
 
 ```
 pip install -r requirements.txt
@@ -36,55 +59,155 @@ pip install -r requirements.txt
 
 ## Usage
 
-We are using the publicly available [Cholec80 dataset](http://camma.u-strasbg.fr/datasets). For training we [split](utils/tecno/split_vid.py) the videos into individual frames.
+We are using the publicly available [Cataract1k](https://github.com/Negin-Ghamsarian/Cataract-1K)
+and [Cataract-101](https://ftp.itec.aau.at/datasets/ovid/cat-101/).
+Since the original project is based on laparoscopic surgery videos dataset `Cholec80`, we first need to convert these
+datasets into the model’s required format.
+To proceed, please ensure that your directory structure matches the following layout.
 
-### Stage 1 - Train Feature Extractor
+For `Cataract1k`:
 
-Run:
+```
+./project_root
+├── annotionas/   # contains raw annotation data
+│   ├── case_4687
+│   ├── case_4693
+│   ...
+│   └── case_5357
+│   ...
+└── videos/       # contains raw surgey videos
+```
+
+For `Cataract-101`:
+
+```
+./project_root
+├── annotionas_cataract_101/   # contains raw annotation data
+│   ├── annotations.csv
+│   └── videos.csv
+│   ...
+└── videos_cataract_101/       # contains raw surgey videos
+```
+
+### Stage 1 - Separate Video into Multiple Phase Segments
+
+Both cataract‐surgery video datasets provide frame‐wise phase annotations. To preserve these annotations after sampling,
+we first split each video into multiple phase segments.
+
+For `Catract1k`:
+
+**Note:** We assume that all intervals between two consecutive phase annotations are idle phases, which are not included
+in the original dataset annotations.
+
+```
+cd ./utils/cataract-1k
+python cal_frames.py
+python action_frame_extractor.py
+```
+
+For `Cataract-101`:
+
+```
+cd ./utils/cataract-101
+python action_frame_extrator.py
+```
+
+After executing the instructions above, you should see the newly created folders `seg_videos` and
+`seg_videos_cataract_101`, respectively.
+
+### Stage 2 - Subsample Video and Generate Final Model Input
+
+The raw Cataract‑1K and Cataract‑101 videos run at 60 fps and 25 fps, respectively. We then subsample them to 5 fps and
+extract each frame as an image.
+
+For `Cataract1k`:
+
+```
+cd ./utils/cataract-1k
+python subsample_frames.py
+python create_dataframes.py
+```
+
+For `Cataract-101`:
+
+```
+cd ./utils/cataract-101
+python subsample_frames.py
+python create_dataframes.py
+```
+
+After executing the instructions above, you should see the following newly created directories
+
+```
+./project_root
+├── images/        # contains video frames (images_cataract_101 for Cataract-101 dataset)
+│   ├── case_4678
+│   ├── case_4693
+│   ...
+│   └── case_5357
+│   ...
+└── dataframes/   # contains data loading input files (dataframes_cataract-101 for Cataract-101 dataset) 
+    ├── cataract_split_250px_5fps.csv # for debugging
+    └── cataract_split_250px_5fps.pkl # actual input for data loading
+```
+
+### Adapting New Dataset to model
+
+To successfully apply this model on new dataset, you should write your own script to generate final data frames served
+as actual
+input for data loading. The final DataFrame (e.g. saved as a CSV/Pickle File) should follow this format:
+
+| image_path         | class                    | time                | video_idx   |
+|--------------------|--------------------------|---------------------|-------------|
+| path to the images | ground truth class index | video time in frame | video index |
+
+After that, define new dataset classes by following the structures in
+`datasets/cholec80.py and datasets/cholec80_feature_extract.py`.
+To generate the weights for the loss function, use `utils/tecno/cal_median_frequency_weights.py`.
+
+### Stage 3 - Training
+
+We fine‑tune the CNN‑based feature extractor and then train the MS‑TCN using the extracted features.
+
+#### Train feature extractor
+
+Ensure that `train.py` only calls `trainer.fit(model)` and specifies `mode='max'` in both callback definitions, since we
+use validation accuracy for early stopping and checkpointing.
+
+For `Cataract1k`:
+
 ```
 python train.py -c modules/cnn/config/config_feature_extract.yml
+```
+
+For `Cataract-101`:
 
 ```
-This will train your feature extractor and in the *Test Step* it will extract for each Video the features of all images and save it as *.pkl*
+python train.py -c modules/cnn/config/config_extract_cataract_101.yaml
+```
 
-### Stage 2 - Train Temporal Convolutional Network
+This will train your feature extractor and, in the **test** step, extract features for every frame in each video and
+save them as `.pkl` files. To enable this, set `trainer.test` to use the appropriate model checkpoint, and set
+`test-extract: True` in the configuration file.
+
+#### Train MS-TCN
+
+Ensure that `train.py` only calls `trainer.fit(model)`, and that both early‑callback definitions use `mode='min'`, since
+we use validation loss as the criterion for early stopping and checkpointing.
+
+For `Cataract1k`:
 
 ```
 python train.py -c modules/mstcn/config/config_tcn.yml
 ```
 
-
-# Reference 
+For `Cataract-101`:
 
 ```
-@inproceedings{czempiel2020,
- author    = {Tobias Czempiel and
-               Magdalini Paschali and
-               Matthias Keicher and
-               Walter Simson and
-               Hubertus Feussner and
-               Seong Tae Kim and
-               Nassir Navab},
- title     = {TeCNO: Surgical Phase Recognition with Multi-Stage Temporal Convolutional
-               Networks},
-  booktitle = {Medical Image Computing and Computer Assisted Intervention - {MICCAI}
-               2020 - 23nd International Conference, Shenzhen, China, October 4-8,
-               2020, Proceedings, Part {III}},
-  series    = {Lecture Notes in Computer Science},
-  volume    = {12263},
-  pages     = {343--352},
-  publisher = {Springer},
-  year      = {2020},
-}
+python train.py -c modules/mstcn/config/config_tcn_cataract_101.yaml
 ```
 
+### Model Performance Evaluation
 
+## Disclamer
 
-# Contact
-
-For any problems and question please open an [Issue](https://github.com/tobiascz/TeCNO/issues/new/choose)
-
-
-[1.2]: http://i.imgur.com/wWzX9uB.png (twitter icon without padding)
-[1]: http://www.twitter.com/tobiasczempiel
-Follow me on [![alt text][1.2]][1]

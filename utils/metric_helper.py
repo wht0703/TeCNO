@@ -41,6 +41,7 @@ class AccuracyStages(Metric):
     def update(self, preds: torch.Tensor, target: torch.Tensor):
         self.total += target.numel()
         for s in range(self.num_stages):
+            # FIXME: to correctly calculate accuracy in multistage settings
             preds_stage = to_onehot(preds[s].argmax(dim=1), num_classes=target.max().item()+1)
             target_onehot = to_onehot(target, num_classes=target.max().item()+1)
 
