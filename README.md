@@ -209,5 +209,5 @@ python train.py -c modules/mstcn/config/config_tcn_cataract_101.yaml
 
 ### Model Performance Evaluation
 
-## Disclamer
+## Known Issues
 
