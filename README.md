@@ -35,9 +35,12 @@ Link to paper: [**TeCNO Paper**](https://arxiv.org/abs/2003.10751)
 - `model/`contains implementations of CNN-based feature extractors and the multi-stage temporal convolutional network (
   MS-TCN).
 
+
 - `datasets/` provides dataset classes and loading utilities.
 
+
 - `modules/` implements training, validation, and testing pipelines for both feature extractors and the MS-TCN.
+
 
 - `utils/` utility scripts for data conversion and preprocessing, including routines to transform given dataset formats
   into the format required for model training.
@@ -193,7 +196,8 @@ save them as `.pkl` files. To enable this, set `trainer.test` to use the appropr
 #### Train MS-TCN
 
 Ensure that `train.py` only calls `trainer.fit(model)`, and that both early‑callback definitions use `mode='min'`, since
-we use validation loss as the criterion for early stopping and checkpointing.
+we use validation loss as the criterion for early stopping and checkpointing. Adapt the `data_root` in configuration
+file.
 
 For `Cataract1k`:
 
@@ -209,5 +213,41 @@ python train.py -c modules/mstcn/config/config_tcn_cataract_101.yaml
 
 ### Model Performance Evaluation
 
+#### Evaluate Feature Extractor
+
+During the **test** step, video‑level performance metrics for each test video are computed in parallel with feature
+extraction and saved as `.txt` files.
+
+`test_tcn.ipynb`: These files are used to calculate the averages and standard deviations of both video‑level and
+stage‑level performance metrics, and to visualize the stage‑level metrics in box plots.
+
+`fearture_extractor_cam.ipynb`: generates CAM based on an single input video frame image.
+
+#### Evaluate MS-TCN
+
+`test_tcn.ipynb`: computes the averages and standard deviations of both video‑level and stage‑level performance
+metrics, and visualizes the stage‑level metrics in box plots. Additionally, it computes and visualizes the confusion
+matrix for each test video, and provides functionality to display the final inference results.
+
+**Note**: To use the provided notebooks, please adjust the checkpoint path, data path, and model hyperparameter class
+inputs
+accordingly.
+
 ## Known Issues
 
+- All performance results presented are based on our current workflow, in which we first split videos into distinct
+  stage segments and then subsample them. However, in real‑world scenarios—where phase boundaries must be determined a
+  posteriori—the model trained in this way will not work. This issue requires further investigation. One possible
+  solution is to perform the subsampling in feature space. Please adjust the code in `datasets/cholec80.py` and
+  `datasets/cataract101.py` accordingly, and use the `features_per_second` and `features_subsampling` parameters to
+  control the subsampling.
+
+
+- The default metrics calculation for MS-TCN in `utils/metric-helper` seems to be flawed. A quick work‑around is to
+  assign the output class number manually:
+  ```
+  preds_stage = to_onehot(preds[s].argmax(dim=1), num_classes=num_output_stages)
+  target_onehot = to_onehot(target, num_classes=num_output_stages)
+  ```
+  This will stop the code from throwing errors, but to correctly analyze model performance, please use the notebooks
+  mentioned in the previous section.
