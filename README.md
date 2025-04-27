@@ -112,6 +112,7 @@ For `Cataract-101`:
 
 ```
 cd ./utils/cataract-101
+python label_data.py
 python action_frame_extrator.py
 ```
 
@@ -170,8 +171,9 @@ To generate the weights for the loss function, use `utils/tecno/cal_median_frequ
 
 ### Stage 3 - Training
 
-We fine‑tune the CNN‑based feature extractor and then train the MS‑TCN using the extracted features.
-
+We fine‑tune the CNN‑based feature extractor and then train the MS‑TCN using the extracted features. For training, we 
+separate the dataset For training, we split the dataset into training, validation, and test sets with a ratio of 7:1.5:1.5, respectively. 
+This is defined in the dataset classes and can be easily adjusted by modifying the corresponding lines.
 #### Train feature extractor
 
 Ensure that `train.py` only calls `trainer.fit(model)` and specifies `mode='max'` in both callback definitions, since we
@@ -218,7 +220,7 @@ python train.py -c modules/mstcn/config/config_tcn_cataract_101.yaml
 During the **test** step, video‑level performance metrics for each test video are computed in parallel with feature
 extraction and saved as `.txt` files.
 
-`test_tcn.ipynb`: These files are used to calculate the averages and standard deviations of both video‑level and
+`test_cnn.ipynb`: These files are used to calculate the averages and standard deviations of both video‑level and
 stage‑level performance metrics, and to visualize the stage‑level metrics in box plots.
 
 `fearture_extractor_cam.ipynb`: generates CAM based on an single input video frame image.
@@ -229,9 +231,11 @@ stage‑level performance metrics, and to visualize the stage‑level metrics in
 metrics, and visualizes the stage‑level metrics in box plots. Additionally, it computes and visualizes the confusion
 matrix for each test video, and provides functionality to display the final inference results.
 
-**Note**: To use the provided notebooks, please adjust the checkpoint path, data path, and model hyperparameter class
-inputs
+**Note**: 
+- To use the provided notebooks, please adjust the checkpoint path, data path, model hyperparameter class
+inputs and test set indices
 accordingly.
+- Several evaluation results could be found in `./evalutation`
 
 ## Known Issues
 

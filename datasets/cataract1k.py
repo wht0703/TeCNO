@@ -5,7 +5,7 @@ import numpy as np
 import pandas as pd
 
 
-class Cholec80Helper(Dataset):
+class Cataract1kHelper(Dataset):
     def __init__(self, hparams, data_p, dataset_split=None):
         assert dataset_split != None
         self.data_p = data_p
@@ -30,7 +30,7 @@ class Cholec80Helper(Dataset):
         return stem, y_hat, y
 
 
-class Cholec80():
+class Cataract1k():
     def __init__(self, hparams):
         self.name = "Cholec80Pickle"
         self.hparams = hparams
@@ -88,9 +88,9 @@ class Cholec80():
 
         self.data = {}
         for split in ["train", "val", "test"]:
-            self.data[split] = Cholec80Helper(hparams,
-                                              self.data_p[split],
-                                              dataset_split=split)
+            self.data[split] = Cataract1kHelper(hparams,
+                                                self.data_p[split],
+                                                dataset_split=split)
 
         print(
             f"train size: {len(self.data['train'])} - val size: {len(self.data['val'])} - test size:"
@@ -98,12 +98,12 @@ class Cholec80():
 
     @staticmethod
     def add_dataset_specific_args(parser):  # pragma: no cover
-        cholec80_specific_args = parser.add_argument_group(
-            title='cholec80 dataset specific args options')
-        cholec80_specific_args.add_argument("--features_per_seconds",
+        cataract1k_specific_args = parser.add_argument_group(
+            title='cataract1k dataset specific args options')
+        cataract1k_specific_args.add_argument("--features_per_seconds",
                                                   default=25,
                                                   type=float)
-        cholec80_specific_args.add_argument("--features_subsampling",
+        cataract1k_specific_args.add_argument("--features_subsampling",
                                                   default=5,
                                                   type=float)
 

@@ -21,7 +21,7 @@ class Cataract101FeatureExtract:
         self.input_width = hparams.input_width
         self.fps_sampling = hparams.fps_sampling
         self.fps_sampling_test = hparams.fps_sampling_test
-        self.cholec_root_dir = Path(self.hparams.data_root)
+        self.cataract101_root_dir = Path(self.hparams.data_root)
         self.image_root = hparams.image_root # videos splitted in images
         self.transformations = self.__get_transformations()
         self.class_labels = [
@@ -43,7 +43,7 @@ class Cataract101FeatureExtract:
         self.label_col = "class"
         self.df = {}
         self.df["all"] = pd.read_pickle(
-            self.cholec_root_dir / "cataract_split_250px_5fps.pkl")
+            self.cataract101_root_dir / "cataract_split_250px_5fps.pkl")
         assert self.df["all"].isnull().sum().sum(
         ) == 0, "Dataframe contains nan Elements"
         self.df["all"] = self.df["all"].reset_index()
@@ -124,22 +124,22 @@ class Cataract101FeatureExtract:
 
     @staticmethod
     def add_dataset_specific_args(parser):  # pragma: no cover
-        cholec80_specific_args = parser.add_argument_group(
+        cataract101_specific_args = parser.add_argument_group(
             title='cholec80 specific args options')
-        cholec80_specific_args.add_argument("--fps_sampling",
+        cataract101_specific_args.add_argument("--fps_sampling",
                                             type=float,
                                             default=25)
-        cholec80_specific_args.add_argument("--fps_sampling_test",
+        cataract101_specific_args.add_argument("--fps_sampling_test",
                                             type=float,
                                             default=25)
-        cholec80_specific_args.add_argument(
+        cataract101_specific_args.add_argument(
             "--dataset_mode",
             default='video',
             choices=[
                 'vid_multilabel', 'img', 'img_multilabel',
                 'img_multilabel_feature_extract'
             ])
-        cholec80_specific_args.add_argument("--test_extract",
+        cataract101_specific_args.add_argument("--test_extract",
                                             action="store_true")
         return parser
 

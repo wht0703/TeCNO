@@ -87,12 +87,12 @@ class Cataract101():
 
     @staticmethod
     def add_dataset_specific_args(parser):  # pragma: no cover
-        cholec80_specific_args = parser.add_argument_group(
-            title='cholec80 dataset specific args options')
-        cholec80_specific_args.add_argument("--features_per_seconds",
+        cataract101_specific_args = parser.add_argument_group(
+            title='cataract101 dataset specific args options')
+        cataract101_specific_args.add_argument("--features_per_seconds",
                                             default=25,
                                             type=float)
-        cholec80_specific_args.add_argument("--features_subsampling",
+        cataract101_specific_args.add_argument("--features_subsampling",
                                             default=5,
                                             type=float)
 

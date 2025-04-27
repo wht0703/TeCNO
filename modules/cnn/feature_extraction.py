@@ -44,7 +44,7 @@ class FeatureExtraction(LightningModule):
         #     self.train_f1_tool = pl.metrics.Fbeta(num_classes=7, multilabel=True)
 
     def set_export_pickle_path(self):
-        self.pickle_path = self.params.output_path / "cholec80_pickle_export"
+        self.pickle_path = self.params.output_path / "cataract_pickle_export"
         self.pickle_path.mkdir(exist_ok=True)
         print(f"setting export_pickle_path: {self.pickle_path}")
 
