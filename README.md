@@ -188,7 +188,7 @@ python train.py -c modules/cnn/config/config_feature_extract.yml
 For `Cataract-101`:
 
 ```
-python train.py -c modules/cnn/config/config_extract_cataract_101.yaml
+python train.py -c modules/cnn/config/config_feature_extract_cataract_101.yaml
 ```
 
 This will train your feature extractor and, in the **test** step, extract features for every frame in each video and

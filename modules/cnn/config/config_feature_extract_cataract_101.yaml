@@ -13,7 +13,7 @@ learning_rate : 0.0005
 dataset_mode : img_multilabel
 early_stopping_metric : val_acc_phase
 pretrained : True
-save_top_k : 1
+save_top_k : 5
 max_epochs : 15 # 30
 min_epochs : 6 # 20
 num_tasks : 1
