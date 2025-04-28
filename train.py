@@ -53,7 +53,7 @@ def train(hparams, ModuleClass, ModelClass, DatasetClass, logger):
 
 
     trainer = Trainer(
-        accelerator='mps',  # Updated for specifying device type
+        accelerator='gpu',  # Updated for specifying device type
         devices=1,  # Specify the number of GPUs or fallback to CPU
         logger=logger,
         # fast_dev_run=True,

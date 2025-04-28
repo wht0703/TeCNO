@@ -9,8 +9,8 @@ features_subsampling : 1
 log_every_n_steps : 1
 mstcn_causal_conv : True
 learning_rate : 0.00007
-min_epochs : 12
-max_epochs : 16
+min_epochs : 25
+max_epochs : 30
 mstcn_layers : 9
 mstcn_f_maps : 64
 mstcn_f_dim: 2048
