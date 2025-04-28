@@ -28,8 +28,8 @@ class TeCNO(LightningModule):
         self.max_acc_last_stage = {"epoch": 0, "acc": 0}
         self.max_acc_global = {"epoch": 0, "acc": 0 , "stage": 0, "last_stage_max_acc_is_global": False}
 
-        self.precision_metric = PrecisionOverClasses(task='multiclass', num_classes=13)
-        self.recall_metric = RecallOverClasse(task='multiclass', num_classes=13)
+        self.precision_metric = PrecisionOverClasses(task='multiclass', num_classes=self.params.out_features)
+        self.recall_metric = RecallOverClasse(task='multiclass', num_classes=self.params.out_features)
         #self.cm_metric = ConfusionMatrix(num_classes=10)
 
     def forward(self, x):

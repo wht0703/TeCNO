@@ -34,9 +34,9 @@ class FeatureExtraction(LightningModule):
         self.pickle_path = None
 
     def init_metrics(self):
-        self.train_acc_phase = torchmetrics.Accuracy('multiclass', num_classes=10)
-        self.val_acc_phase = torchmetrics.Accuracy('multiclass', num_classes=10)
-        self.test_acc_phase = torchmetrics.Accuracy('multiclass', num_classes=10)
+        self.train_acc_phase = torchmetrics.Accuracy('multiclass', num_classes=self.params.out_features)
+        self.val_acc_phase = torchmetrics.Accuracy('multiclass', num_classes=self.params.out_features)
+        self.test_acc_phase = torchmetrics.Accuracy('multiclass', num_classes=self.params.out_features)
         # if self.num_tasks == 2:
         #     self.train_acc_tool = pl.metrics.Accuracy()
         #     self.val_acc_tool = pl.metrics.Accuracy()
