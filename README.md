@@ -11,7 +11,6 @@ align="right" />
 3. [**Getting started**](#getting-started)
     1. [**Prerequisites**](#prerequisites)
     2. [**Usage**](#usage)
-4. [**Disclamer**](#disclamer)
 
 # About
 
