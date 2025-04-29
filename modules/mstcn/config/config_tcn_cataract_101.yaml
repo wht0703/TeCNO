@@ -18,5 +18,5 @@ mstcn_stages : 2
 early_stopping_metric : val_loss
 save_top_k : 10
 gpus : ['1']
-data_root : /Users/haotongwang/Documents/programming/idp/TeCNO/logs/250410-140616_FeatureExtraction_Cataract101FeatureExtract_cnn_OneHeadResNet50Model/cholec80_pickle_export/
+data_root : /Users/haotongwang/Documents/programming/idp/TeCNO/logs/250410-140616_FeatureExtraction_Cataract101FeatureExtract_cnn_OneHeadResNet50Model/cataract_pickle_export/
 num_sanity_val_steps: 0
