@@ -253,7 +253,7 @@ matrix for each test video, and provides functionality to display the final infe
   control the subsampling.
 
 
-- The default metrics calculation for MS-TCN in `utils/metric-helper` seems to be flawed. A quick work‑around is to
+- The default metrics calculation for MS-TCN in `utils/metric-helper.py` seems to be flawed. A quick work‑around is to
   assign the output class number manually:
   ```
   preds_stage = to_onehot(preds[s].argmax(dim=1), num_classes=num_output_stages) # num_output_stages should be an integer value 
