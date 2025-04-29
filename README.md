@@ -72,7 +72,7 @@ For `Cataract1k`:
 
 ```
 ./project_root
-├── annotionas/   # contains raw annotation data
+├── annotations/   # contains raw annotation data
 │   ├── case_4687
 │   ├── case_4693
 │   ...
@@ -85,7 +85,7 @@ For `Cataract-101`:
 
 ```
 ./project_root
-├── annotionas_cataract_101/   # contains raw annotation data
+├── annotations_cataract_101/   # contains raw annotation data
 │   ├── annotations.csv
 │   └── videos.csv
 │   ...
@@ -250,7 +250,7 @@ accordingly.
 - The default metrics calculation for MS-TCN in `utils/metric-helper` seems to be flawed. A quick work‑around is to
   assign the output class number manually:
   ```
-  preds_stage = to_onehot(preds[s].argmax(dim=1), num_classes=num_output_stages)
+  preds_stage = to_onehot(preds[s].argmax(dim=1), num_classes=num_output_stages) # num_output_stages should be an integer value 
   target_onehot = to_onehot(target, num_classes=num_output_stages)
   ```
   This will stop the code from throwing errors, but to correctly analyze model performance, please use the notebooks
