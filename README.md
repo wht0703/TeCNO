@@ -171,8 +171,10 @@ To generate the weights for the loss function, use `utils/tecno/cal_median_frequ
 
 ### Stage 3 - Training
 
-We fine‑tune the CNN‑based feature extractor and then train the MS‑TCN using the extracted features. For training, we split the dataset into training, validation, and test sets with a ratio of 7:1.5:1.5, respectively. 
+We fine‑tune the CNN‑based feature extractor and then train the MS‑TCN using the extracted features. For training, we
+split the dataset into training, validation, and test sets with a ratio of 7:1.5:1.5, respectively.
 This is defined in the dataset classes and can be easily adjusted by modifying the corresponding lines.
+
 #### Train feature extractor
 
 Ensure that `train.py` only calls `trainer.fit(model)` and specifies `mode='max'` in both callback definitions, since we
@@ -213,7 +215,10 @@ python train.py -c modules/mstcn/config/config_tcn_cataract_101.yaml
 ```
 
 ### Model Performance Evaluation
-All pretrained model check points can be found [**model checkpoints**](https://tumde-my.sharepoint.com/:u:/g/personal/haotong_wang_tum_de/EXcmL8WDS9VFm5fuJx67O0MB-1Sq8zakUjagYA2uBi3ZNw?e=Adf9xc)
+
+All pretrained model check points can be found [**model checkpoints
+**](https://tumde-my.sharepoint.com/:u:/g/personal/haotong_wang_tum_de/EXcmL8WDS9VFm5fuJx67O0MB-1Sq8zakUjagYA2uBi3ZNw?e=Adf9xc)
+
 #### Evaluate Feature Extractor
 
 During the **test** step, video‑level performance metrics for each test video are computed in parallel with feature
@@ -230,11 +235,15 @@ stage‑level performance metrics, and to visualize the stage‑level metrics in
 metrics, and visualizes the stage‑level metrics in box plots. Additionally, it computes and visualizes the confusion
 matrix for each test video, and provides functionality to display the final inference results.
 
-**Note**: 
+**Note**:
+
 - To use the provided notebooks, please adjust the checkpoint path, data path, model hyperparameter class
-inputs and test set indices
-accordingly.
-- Several evaluation results could be found in `./evalutation`
+  inputs and test set indices
+  accordingly.
+- Several evaluation results could be found in `./evalutation`. For Cataract-1k, the reported results are based on a
+  feature extractor fine-tuned for 7 epochs and an MS-TCN trained for 24 epochs. For Cataract-101, the reported results
+  are based on a feature extractor fine-tuned for 5 epochs and an MS-TCN trained for 23 epochs. To achieve the similar training outcome,
+  you may need to adjust checkpointing or early stopping callback in `train.py` accordingly.
 
 ## Known Issues
 
