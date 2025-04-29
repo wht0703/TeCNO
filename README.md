@@ -216,8 +216,7 @@ python train.py -c modules/mstcn/config/config_tcn_cataract_101.yaml
 
 ### Model Performance Evaluation
 
-All pretrained model check points can be found [**model checkpoints
-**](https://tumde-my.sharepoint.com/:u:/g/personal/haotong_wang_tum_de/EXcmL8WDS9VFm5fuJx67O0MB-1Sq8zakUjagYA2uBi3ZNw?e=Adf9xc)
+All pretrained model check points can be found [**model checkpoints**](https://tumde-my.sharepoint.com/:u:/g/personal/haotong_wang_tum_de/EXcmL8WDS9VFm5fuJx67O0MB-1Sq8zakUjagYA2uBi3ZNw?e=Adf9xc)
 
 #### Evaluate Feature Extractor
 
