@@ -248,7 +248,7 @@ matrix for each test video, and provides functionality to display the final infe
 - All performance results presented are based on our current workflow, in which we first split videos into distinct
   stage segments and then subsample them. However, in real‑world scenarios—where phase boundaries must be determined a
   posteriori—the model trained in this way will not work. This issue requires further investigation. One possible
-  solution is to perform the subsampling in feature space. Please adjust the code in `datasets/cholec80.py` and
+  solution is to perform the subsampling in feature space. Please adjust the code in `datasets/cataract1k.py` and
   `datasets/cataract101.py` accordingly, and use the `features_per_second` and `features_subsampling` parameters to
   control the subsampling.
 
