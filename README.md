@@ -166,13 +166,12 @@ input for data loading. The final DataFrame (e.g. saved as a CSV/Pickle File) sh
 | path to the images | ground truth class index | video time in frame | video index |
 
 After that, define new dataset classes by following the structures in
-`datasets/cholec80.py and datasets/cholec80_feature_extract.py`.
+`datasets/cataract101.py` and `datasets/cataract101_feature_extract.py`.
 To generate the weights for the loss function, use `utils/tecno/cal_median_frequency_weights.py`.
 
 ### Stage 3 - Training
 
-We fine‑tune the CNN‑based feature extractor and then train the MS‑TCN using the extracted features. For training, we 
-separate the dataset For training, we split the dataset into training, validation, and test sets with a ratio of 7:1.5:1.5, respectively. 
+We fine‑tune the CNN‑based feature extractor and then train the MS‑TCN using the extracted features. For training, we split the dataset into training, validation, and test sets with a ratio of 7:1.5:1.5, respectively. 
 This is defined in the dataset classes and can be easily adjusted by modifying the corresponding lines.
 #### Train feature extractor
 
